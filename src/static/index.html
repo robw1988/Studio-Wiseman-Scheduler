@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio Wiseman - Cabinetry Scheduler</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar Navigation -->
+            <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h5 class="text-white">Studio Wiseman</h5>
+                        <p class="text-muted">Cabinetry Scheduler</p>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-view="dashboard" href="#">
+                                <i class="bi bi-speedometer2 me-2"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-view="quotes" href="#">
+                                <i class="bi bi-file-earmark-text me-2"></i>
+                                Quotes
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-view="jobs" href="#">
+                                <i class="bi bi-calendar-check me-2"></i>
+                                Workshop Jobs
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-view="clients" href="#">
+                                <i class="bi bi-people me-2"></i>
+                                Clients
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-view="staff" href="#">
+                                <i class="bi bi-person-badge me-2"></i>
+                                Staff
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-view="payments" href="#">
+                                <i class="bi bi-cash-stack me-2"></i>
+                                Payments
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-view="reports" href="#">
+                                <i class="bi bi-graph-up me-2"></i>
+                                Reports
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <hr class="text-muted">
+                    
+                    <div class="px-3 mt-4">
+                        <div class="d-flex align-items-center text-muted">
+                            <i class="bi bi-person-circle me-2"></i>
+                            <span>Admin User</span>
+                        </div>
+                        <a href="#" class="btn btn-outline-secondary btn-sm mt-2 w-100">
+                            <i class="bi bi-box-arrow-right me-1"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content Area -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Dashboard</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
+                            <i class="bi bi-calendar"></i>
+                            This week
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dashboard Content -->
+                <div id="dashboard-view">
+                    <!-- Summary Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card text-white bg-primary">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="card-title">Active Jobs</h6>
+                                            <h2 id="active-jobs-count" class="card-text">12</h2>
+                                        </div>
+                                        <i class="bi bi-tools fs-1"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-white bg-success">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="card-title">Pending Quotes</h6>
+                                            <h2 id="pending-quotes-count" class="card-text">8</h2>
+                                        </div>
+                                        <i class="bi bi-file-earmark-text fs-1"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-white bg-info">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="card-title">Upcoming Payments</h6>
+                                            <h2 id="upcoming-payments-amount" class="card-text">£24,500</h2>
+                                        </div>
+                                        <i class="bi bi-cash fs-1"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-white bg-warning">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="card-title">Client Updates Needed</h6>
+                                            <h2 id="clients-updates-count" class="card-text">5</h2>
+                                        </div>
+                                        <i class="bi bi-bell fs-1"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Weekly Calendar -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Weekly Calendar</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Monday</th>
+                                            <th>Tuesday</th>
+                                            <th>Wednesday</th>
+                                            <th>Thursday</th>
+                                            <th>Friday</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr style="height: 150px;">
+                                            <td>
+                                                <div class="calendar-event build-event">
+                                                    <strong>Hampstead Kitchen</strong>
+                                                    <p>Build - James, Robert</p>
+                                                </div>
+                                                <div class="calendar-event spray-event">
+                                                    <strong>Chelsea Wardrobe</strong>
+                                                    <p>Spray</p>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="calendar-event build-event">
+                                                    <strong>Hampstead Kitchen</strong>
+                                                    <p>Build - James, Robert</p>
+                                                </div>
+                                                <div class="calendar-event spray-event">
+                                                    <strong>Chelsea Wardrobe</strong>
+                                                    <p>Spray</p>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="calendar-event build-event">
+                                                    <strong>Hampstead Kitchen</strong>
+                                                    <p>Build - James, Robert</p>
+                                                </div>
+                                                <div class="calendar-event spray-event">
+                                                    <strong>Chelsea Wardrobe</strong>
+                                                    <p>Spray</p>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="calendar-event fit-event">
+                                                    <strong>Chelsea Wardrobe</strong>
+                                                    <p>Fit - William</p>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="calendar-event fit-event">
+                                                    <strong>Chelsea Wardrobe</strong>
+                                                    <p>Fit - William</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <!-- Cashflow Forecast -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Cashflow Forecast</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="cashflow-chart" height="200"></canvas>
+                                    
+                                    <div class="mt-4">
+                                        <h6>Current Month: <span id="current-month-total">£32,500</span></h6>
+                                        <div class="progress mb-2" style="height: 20px;">
+                                            <div id="deposit-progress" class="progress-bar bg-primary" role="progressbar" style="width: 50%;">Deposits: £16,250</div>
+                                        </div>
+                                        <div class="progress mb-2" style="height: 20px;">
+                                            <div id="build-progress" class="progress-bar bg-success" role="progressbar" style="width: 30%;">Build: £9,750</div>
+                                        </div>
+                                        <div class="progress mb-2" style="height: 20px;">
+                                            <div id="fit-progress" class="progress-bar bg-info" role="progressbar" style="width: 15%;">Fit: £4,875</div>
+                                        </div>
+                                        <div class="progress mb-2" style="height: 20px;">
+                                            <div id="completion-progress" class="progress-bar bg-warning" role="progressbar" style="width: 5%;">Completion: £1,625</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Past 3 Months Income -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Past 3 Months Income</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="income-chart" height="200"></canvas>
+                                    
+                                    <div class="mt-4">
+                                        <h6>Total: <span id="income-history-total">£87,500</span></h6>
+                                        <div class="d-flex justify-content-between">
+                                            <span id="deposit-percentage" class="badge bg-primary p-2">Deposits: 45%</span>
+                                            <span id="build-percentage" class="badge bg-success p-2">Build: 25%</span>
+                                            <span id="fit-percentage" class="badge bg-info p-2">Fit: 20%</span>
+                                            <span id="completion-percentage" class="badge bg-warning p-2">Completion: 10%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Workshop Jobs -->
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">Current Workshop Jobs</h5>
+                            <button class="btn btn-primary btn-sm">
+                                <i class="bi bi-plus"></i> New Job
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="current-jobs-table" class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Job Name</th>
+                                            <th>Client</th>
+                                            <th>Stage</th>
+                                            <th>Build Date</th>
+                                            <th>Fitting Date</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Hampstead Kitchen</td>
+                                            <td>John Smith</td>
+                                            <td>Build</td>
+                                            <td>19 May 2025</td>
+                                            <td>26 May 2025</td>
+                                            <td><span class="badge bg-success status-badge">On Track</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Chelsea Wardrobe</td>
+                                            <td>Emma Johnson</td>
+                                            <td>Spray</td>
+                                            <td>12 May 2025</td>
+                                            <td>22 May 2025</td>
+                                            <td><span class="badge bg-warning status-badge">Delayed</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Kensington Media Wall</td>
+                                            <td>Michael Brown</td>
+                                            <td>Not Started</td>
+                                            <td>2 Jun 2025</td>
+                                            <td>9 Jun 2025</td>
+                                            <td><span class="badge bg-info status-badge">Scheduled</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // Initialize charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cashflow Forecast Chart
+            const cashflowCtx = document.getElementById('cashflow-chart').getContext('2d');
+            window.cashflowChart = new Chart(cashflowCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['May 2025', 'Jun 2025', 'Jul 2025', 'Aug 2025', 'Sep 2025', 'Oct 2025'],
+                    datasets: [{
+                        label: 'Projected Income',
+                        data: [32500, 45000, 38000, 42000, 36000, 40000],
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '£' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Income History Chart
+            const incomeCtx = document.getElementById('income-chart').getContext('2d');
+            window.incomeChart = new Chart(incomeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Deposits', 'Build', 'Fit', 'Completion'],
+                    datasets: [{
+                        data: [45, 25, 20, 10],
+                        backgroundColor: [
+                            'rgba(13, 110, 253, 0.7)',
+                            'rgba(25, 135, 84, 0.7)',
+                            'rgba(13, 202, 240, 0.7)',
+                            'rgba(255, 193, 7, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(13, 110, 253, 1)',
+                            'rgba(25, 135, 84, 1)',
+                            'rgba(13, 202, 240, 1)',
+                            'rgba(255, 193, 7, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

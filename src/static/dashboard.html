@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio Wiseman - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 48px 0 0;
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+            background-color: #343a40;
+        }
+        .sidebar-sticky {
+            position: relative;
+            top: 0;
+            height: calc(100vh - 48px);
+            padding-top: .5rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+        .sidebar .nav-link {
+            font-weight: 500;
+            color: #f8f9fa;
+            padding: 0.75rem 1rem;
+        }
+        .sidebar .nav-link:hover {
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .sidebar .nav-link.active {
+            color: #fff;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+        .navbar-brand {
+            padding-top: .75rem;
+            padding-bottom: .75rem;
+            font-size: 1rem;
+            background-color: rgba(0, 0, 0, .25);
+            box-shadow: inset -1px 0 0 rgba(0, 0, 0, .25);
+        }
+        .navbar .navbar-toggler {
+            top: .25rem;
+            right: 1rem;
+        }
+        .main-content {
+            margin-left: 240px;
+            padding: 20px;
+        }
+        .card {
+            margin-bottom: 20px;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        .card-header {
+            background-color: #f8f9fa;
+            font-weight: 500;
+        }
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+        }
+        .calendar-container {
+            margin-bottom: 20px;
+        }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+        .calendar-day {
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            min-height: 120px;
+        }
+        .calendar-day-header {
+            font-weight: 500;
+            text-align: center;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .calendar-event {
+            background-color: #0d6efd;
+            color: white;
+            border-radius: 4px;
+            padding: 5px;
+            margin-bottom: 5px;
+            font-size: 0.8rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .calendar-event-build {
+            background-color: #0d6efd;
+        }
+        .calendar-event-spray {
+            background-color: #6610f2;
+        }
+        .calendar-event-fit {
+            background-color: #198754;
+        }
+        .calendar-event-snag {
+            background-color: #dc3545;
+        }
+        @media (max-width: 767.98px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+        <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="#">Studio Wiseman</a>
+        <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="w-100"></div>
+        <div class="navbar-nav">
+            <div class="nav-item text-nowrap">
+                <a class="nav-link px-3" href="index.html">Sign out</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="dashboard.html">
+                                <i class="bi bi-speedometer2"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="bi bi-file-earmark-text"></i>
+                                Quotes
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="workshop_scheduling.html">
+                                <i class="bi bi-tools"></i>
+                                Workshop Jobs
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="bi bi-people"></i>
+                                Clients
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="bi bi-person-badge"></i>
+                                Staff
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="bi bi-calendar-week"></i>
+                                Schedule
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="bi bi-cash-coin"></i>
+                                Payments
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="bi bi-graph-up"></i>
+                                Reports
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="bi bi-gear"></i>
+                                Settings
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Dashboard</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
+                            <i class="bi bi-calendar"></i>
+                            This week
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <div class="card text-white bg-primary">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="card-title">Active Jobs</h6>
+                                        <h2 class="mb-0">12</h2>
+                                    </div>
+                                    <i class="bi bi-tools fs-1"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <div class="card text-white bg-success">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="card-title">Pending Quotes</h6>
+                                        <h2 class="mb-0">8</h2>
+                                    </div>
+                                    <i class="bi bi-file-earmark-text fs-1"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <div class="card text-white bg-warning">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="card-title">Upcoming Payments</h6>
+                                        <h2 class="mb-0">£24,500</h2>
+                                    </div>
+                                    <i class="bi bi-cash-coin fs-1"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-4">
+                        <div class="card text-white bg-danger">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="card-title">Client Updates Needed</h6>
+                                        <h2 class="mb-0">5</h2>
+                                    </div>
+                                    <i class="bi bi-exclamation-triangle fs-1"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Weekly Calendar</span>
+                            <div>
+                                <button class="btn btn-sm btn-outline-secondary me-2">
+                                    <i class="bi bi-arrow-left"></i>
+                                </button>
+                                <span>May 17 - May 23, 2025</span>
+                                <button class="btn btn-sm btn-outline-secondary ms-2">
+                                    <i class="bi bi-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="calendar-container">
+                            <div class="calendar-grid">
+                                <div class="calendar-day">
+                                    <div class="calendar-day-header">Mon, May 19</div>
+                                    <div class="calendar-event calendar-event-build">Hampstead Kitchen (Build)</div>
+                                    <div class="calendar-event calendar-event-spray">Chelsea Wardrobe (Spray)</div>
+                                </div>
+                                <div class="calendar-day">
+                                    <div class="calendar-day-header">Tue, May 20</div>
+                                    <div class="calendar-event calendar-event-build">Hampstead Kitchen (Build)</div>
+                                    <div class="calendar-event calendar-event-spray">Chelsea Wardrobe (Spray)</div>
+                                </div>
+                                <div class="calendar-day">
+                                    <div class="calendar-day-header">Wed, May 21</div>
+                                    <div class="calendar-event calendar-event-build">Hampstead Kitchen (Build)</div>
+                                    <div class="calendar-event calendar-event-spray">Chelsea Wardrobe (Spray)</div>
+                                    <div class="calendar-event calendar-event-fit">Kensington Media Wall (Fit)</div>
+                                </div>
+                                <div class="calendar-day">
+                                    <div class="calendar-day-header">Thu, May 22</div>
+                                    <div class="calendar-event calendar-event-build">Hampstead Kitchen (Build)</div>
+                                    <div class="calendar-event calendar-event-fit">Kensington Media Wall (Fit)</div>
+                                </div>
+                                <div class="calendar-day">
+                                    <div class="calendar-day-header">Fri, May 23</div>
+                                    <div class="calendar-event calendar-event-build">Hampstead Kitchen (Build)</div>
+                                    <div class="calendar-event calendar-event-fit">Kensington Media Wall (Fit)</div>
+                                </div>
+                                <div class="calendar-day">
+                                    <div class="calendar-day-header">Sat, May 24</div>
+                                    <div class="calendar-event calendar-event-snag">Notting Hill Kitchen (Snag)</div>
+                                </div>
+                                <div class="calendar-day">
+                                    <div class="calendar-day-header">Sun, May 25</div>
+                                    <!-- No events scheduled -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                Current Workshop Jobs
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Job Name</th>
+                                                <th>Client</th>
+                                                <th>Stage</th>
+                                                <th>Build Start</th>
+                                                <th>Fitting Date</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Hampstead Kitchen</td>
+                                                <td>John Smith</td>
+                                                <td>Build</td>
+                                                <td>May 19, 2025</td>
+                                                <td>May 26, 2025</td>
+                                                <td><span class="badge bg-success status-badge">On Track</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Chelsea Wardrobe</td>
+                                                <td>Emma Johnson</td>
+                                                <td>Spray</td>
+                                                <td>May 12, 2025</td>
+                                                <td>May 22, 2025</td>
+                                                <td><span class="badge bg-warning status-badge">Delayed</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Kensington Media Wall</td>
+                                                <td>Michael Brown</td>
+                                                <td>Fit</td>
+                                                <td>May 5, 2025</td>
+                                                <td>May 21, 2025</td>
+                                                <td><span class="badge bg-success status-badge">On Track</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Notting Hill Kitchen</td>
+                                                <td>Sarah Wilson</td>
+                                                <td>Snag</td>
+                                                <td>May 1, 2025</td>
+                                                <td>May 15, 2025</td>
+                                                <td><span class="badge bg-danger status-badge">Issue</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Fulham Wardrobe</td>
+                                                <td>David Taylor</td>
+                                                <td>Planned</td>
+                                                <td>May 26, 2025</td>
+                                                <td>June 5, 2025</td>
+                                                <td><span class="badge bg-info status-badge">Scheduled</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                Cashflow Forecast
+                            </div>
+                            <div class="card-body">
+                                <canvas id="cashflowChart" height="200"></canvas>
+                                <div class="mt-3">
+                                    <h6>Current Month: £32,500</h6>
+                                    <div class="progress mb-2" style="height: 20px;">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">Deposits: £16,250</div>
+                                    </div>
+                                    <div class="progress mb-2" style="height: 20px;">
+                                        <div class="progress-bar bg-primary" role="progressbar" style="width: 30%;" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100">Build: £9,750</div>
+                                    </div>
+                                    <div class="progress mb-2" style="height: 20px;">
+                                        <div class="progress-bar bg-info" role="progressbar" style="width: 15%;" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100">Fit: £4,875</div>
+                                    </div>
+                                    <div class="progress mb-2" style="height: 20px;">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 5%;" aria-valuenow="5" aria-valuemin="0" aria-valuemax="100">Completion: £1,625</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                Past 3 Months Income
+                            </div>
+                            <div class="card-body">
+                                <canvas id="incomeChart" height="200"></canvas>
+                                <div class="mt-3">
+                                    <h6>Total: £87,500</h6>
+                                    <div class="d-flex justify-content-between">
+                                        <div>Deposits: 45%</div>
+                                        <div>Build: 25%</div>
+                                        <div>Fit: 20%</div>
+                                        <div>Completion: 10%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Cashflow Forecast Chart
+        const cashflowCtx = document.getElementById('cashflowChart').getContext('2d');
+        const cashflowChart = new Chart(cashflowCtx, {
+            type: 'bar',
+            data: {
+                labels: ['May', 'June', 'July', 'August', 'September', 'October'],
+                datasets: [{
+                    label: 'Projected Income (£)',
+                    data: [32500, 45000, 38000, 52000, 41000, 36000],
+                    backgroundColor: '#0d6efd'
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '£' + value;
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // Past Income Chart
+        const incomeCtx = document.getElementById('incomeChart').getContext('2d');
+        const incomeChart = new Chart(incomeCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Deposits', 'Build', 'Fit', 'Completion'],
+                datasets: [{
+                    data: [45, 25, 20, 10],
+                    backgroundColor: [
+                        '#198754',
+                        '#0d6efd',
+                        '#0dcaf0',
+                        '#ffc107'
+                    ]
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
