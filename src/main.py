@@ -31,7 +31,11 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'index'
+login_manager.login_view = None  # Disable automatic redirects
+
+@login_manager.unauthorized_handler
+def unauthorized():
+    return jsonify({"error": "Unauthorized access", "login_required": True}), 401
 
 # Register blueprints
 app.register_blueprint(user_bp)
@@ -48,6 +52,7 @@ def load_user(user_id):
 
 @app.route('/login')
 def login():
+    # This route should not require authentication
     return send_from_directory('static', 'index.html')
 
 @app.route('/test')
