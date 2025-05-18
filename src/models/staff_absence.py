@@ -1,4 +1,4 @@
-from src.models.user import db
+from src.models import db
 from datetime import datetime
 
 class StaffAbsence(db.Model):
