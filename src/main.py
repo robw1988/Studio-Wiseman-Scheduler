@@ -15,7 +15,9 @@ from src.routes.staff import staff_bp
 from src.routes.payment import payment_bp
 from src.routes.report import report_bp
 
-app = Flask(__name__)
+app = Flask(__name__, 
+             static_folder='static',
+             static_url_path='/static')
 CORS(app)
 
 # Enable debug mode
