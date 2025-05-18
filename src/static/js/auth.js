@@ -40,63 +40,54 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Check if user is authenticated
 function checkAuthStatus() {
-    // Check if we're in a post-logout state
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('logout')) {
-        console.log('Detected logout parameter, showing login form');
-        showLoginForm();
-        return;
-    }
-    
-    // Force login form to show on initial page load if not authenticated in session
-    if (!sessionStorage.getItem('authenticated')) {
-        console.log('No authenticated session found, showing login form');
-        showLoginForm();
-        return;
-    }
+    console.log('Checking authentication status...');
     
     // Make a request to a protected endpoint
-    fetch('/api/users/health')
-        .then(response => {
-            if (response.status === 401) {
-                // User is not authenticated, show login form
-                console.log('Received 401 from health check, showing login form');
-                sessionStorage.removeItem('authenticated');
-                showLoginForm();
-                return Promise.reject('Unauthorized');
-            }
-            
-            // Check if response is JSON before parsing
-            const contentType = response.headers.get('content-type');
-            if (contentType && contentType.includes('application/json')) {
-                return response.json();
-            } else {
-                console.error('Health check response is not JSON:', contentType);
-                sessionStorage.removeItem('authenticated');
-                showLoginForm();
-                return Promise.reject('Invalid response format');
-            }
-        })
-        .then(data => {
-            // User is authenticated, hide login form and show main content
-            console.log('Health check successful, user is authenticated');
-            sessionStorage.setItem('authenticated', 'true');
-            hideLoginForm();
-        })
-        .catch(error => {
-            if (error === 'Unauthorized') {
-                // Already handled above
-                console.log('User needs to log in');
-            } else if (error === 'Invalid response format') {
-                // Already handled above
-                console.log('Invalid response format from health check');
-            } else {
-                console.error('Error checking auth status:', error);
-                // Show login form on any error
-                sessionStorage.removeItem('authenticated');
-                showLoginForm();
-            }
-        });
+    fetch('/api/users/health', {
+        method: 'GET',
+        credentials: 'include', // Important: include credentials (cookies) with request
+        headers: {
+            'Accept': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate'
+        }
+    })
+    .then(response => {
+        console.log('Auth status response:', response.status);
+        if (response.status === 401) {
+            // User is not authenticated, show login form
+            console.log('Received 401 from health check, showing login form');
+            showLoginForm();
+            return Promise.reject('Unauthorized');
+        }
+        
+        // Check if response is JSON before parsing
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            return response.json();
+        } else {
+            console.error('Health check response is not JSON:', contentType);
+            showLoginForm();
+            return Promise.reject('Invalid response format');
+        }
+    })
+    .then(data => {
+        // User is authenticated, hide login form and show main content
+        console.log('Health check successful, user is authenticated:', data);
+        hideLoginForm();
+    })
+    .catch(error => {
+        if (error === 'Unauthorized') {
+            // Already handled above
+            console.log('User needs to log in');
+        } else if (error === 'Invalid response format') {
+            // Already handled above
+            console.log('Invalid response format from health check');
+        } else {
+            console.error('Error checking auth status:', error);
+            // Show login form on any error
+            showLoginForm();
+        }
+    });
 }
 
 // Handle login form submission
@@ -116,11 +107,16 @@ function handleLogin(event) {
     // Clear previous errors
     hideLoginError();
     
+    console.log('Attempting login...');
+    
     // Send login request
-    fetch('/api/users/login', {  // FIXED: Using correct endpoint path with blueprint prefix
+    fetch('/api/users/login', {
         method: 'POST',
+        credentials: 'include', // Important: include credentials (cookies) with request
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate'
         },
         body: JSON.stringify({
             username: username,
@@ -128,6 +124,8 @@ function handleLogin(event) {
         })
     })
     .then(response => {
+        console.log('Login response status:', response.status);
+        
         // Check if response is JSON before parsing
         const contentType = response.headers.get('content-type');
         if (contentType && contentType.includes('application/json')) {
@@ -144,11 +142,18 @@ function handleLogin(event) {
     })
     .then(data => {
         // Login successful
-        console.log('Login successful');
-        sessionStorage.setItem('authenticated', 'true');
+        console.log('Login successful:', data);
+        
+        // Don't reload the page - just hide login form and show main content
         hideLoginForm();
-        // Reload the page to initialize the authenticated session
-        window.location.reload();
+        
+        // Initialize the dashboard
+        if (typeof initializeDashboard === 'function') {
+            console.log('Initializing dashboard...');
+            initializeDashboard();
+        } else {
+            console.log('Dashboard initialization function not found, continuing...');
+        }
     })
     .catch(error => {
         console.error('Login error:', error);
@@ -164,14 +169,18 @@ function handleLogout(event) {
     
     console.log('Logging out...');
     
-    // Try POST first, then GET if POST fails
-    fetch('/api/users/logout', {  // FIXED: Using correct endpoint path with blueprint prefix
+    fetch('/api/users/logout', {
         method: 'POST',
+        credentials: 'include', // Important: include credentials (cookies) with request
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate'
         }
     })
     .then(response => {
+        console.log('Logout response status:', response.status);
+        
         // Check if response is JSON before parsing
         const contentType = response.headers.get('content-type');
         if (contentType && contentType.includes('application/json')) {
@@ -189,35 +198,44 @@ function handleLogout(event) {
         }
     })
     .then(data => {
-        console.log('Logout successful');
+        console.log('Logout successful:', data);
         completeLogout();
     })
     .catch(error => {
         console.error('Logout error:', error);
         // Try GET method as fallback
-        fetch('/api/users/logout', { method: 'GET' })  // FIXED: Using correct endpoint path with blueprint prefix
-            .then(() => {
-                console.log('Logout successful via GET fallback');
-                completeLogout();
-            })
-            .catch(fallbackError => {
-                console.error('Fallback logout also failed:', fallbackError);
-                // Still complete logout on client side even if server request fails
-                completeLogout();
-            });
+        fetch('/api/users/logout', {
+            method: 'GET',
+            credentials: 'include', // Important: include credentials (cookies) with request
+            headers: {
+                'Accept': 'application/json',
+                'Cache-Control': 'no-cache, no-store, must-revalidate'
+            }
+        })
+        .then(() => {
+            console.log('Logout successful via GET fallback');
+            completeLogout();
+        })
+        .catch(fallbackError => {
+            console.error('Fallback logout also failed:', fallbackError);
+            // Still complete logout on client side even if server request fails
+            completeLogout();
+        });
     });
 }
 
 // Complete logout process
 function completeLogout() {
-    // Clear authentication state
-    sessionStorage.removeItem('authenticated');
-    
     // Show login form
     showLoginForm();
     
-    // Reload page with logout parameter to ensure fresh state
-    window.location.href = '/?logout=true';
+    // Clear any form data
+    if (loginForm) {
+        loginForm.reset();
+    }
+    
+    // Redirect to home page
+    window.location.href = '/';
 }
 
 // Show login form
@@ -252,23 +270,19 @@ function hideLoginError() {
     }
 }
 
-// Handle unauthorized responses globally
-function handleUnauthorizedResponse(response) {
-    if (response.status === 401) {
-        sessionStorage.removeItem('authenticated');
-        showLoginForm();
-        return Promise.reject('Unauthorized');
-    }
-    return response;
-}
-
 // Add global fetch interceptor for unauthorized responses
 const originalFetch = window.fetch;
-window.fetch = function(url, options) {
-    return originalFetch(url, options)
+window.fetch = function(url, options = {}) {
+    // Ensure credentials are included in all requests
+    const newOptions = {
+        ...options,
+        credentials: 'include'
+    };
+    
+    return originalFetch(url, newOptions)
         .then(response => {
             if (response.status === 401) {
-                sessionStorage.removeItem('authenticated');
+                console.log('Received 401 response from:', url);
                 showLoginForm();
                 return Promise.reject('Unauthorized');
             }
