@@ -1,0 +1,155 @@
+// Authentication handling for Studio Wiseman Cabinetry Scheduler
+
+// DOM elements
+let loginForm;
+let usernameInput;
+let passwordInput;
+let loginError;
+let loginContainer;
+let mainContent;
+
+// Initialize authentication handling
+document.addEventListener('DOMContentLoaded', function() {
+    // Get DOM elements
+    loginForm = document.getElementById('login-form');
+    usernameInput = document.getElementById('username');
+    passwordInput = document.getElementById('password');
+    loginError = document.getElementById('login-error');
+    loginContainer = document.getElementById('login-container');
+    mainContent = document.getElementById('main-content');
+    
+    // Set up event listeners
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
+    
+    // Check authentication status on page load
+    checkAuthStatus();
+});
+
+// Check if user is authenticated
+function checkAuthStatus() {
+    // Make a request to a protected endpoint
+    fetch('/api/health')
+        .then(response => {
+            if (response.status === 401) {
+                // User is not authenticated, show login form
+                showLoginForm();
+                return Promise.reject('Unauthorized');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // User is authenticated, hide login form and show main content
+            hideLoginForm();
+        })
+        .catch(error => {
+            if (error === 'Unauthorized') {
+                // Already handled above
+                console.log('User needs to log in');
+            } else {
+                console.error('Error checking auth status:', error);
+            }
+        });
+}
+
+// Handle login form submission
+function handleLogin(event) {
+    event.preventDefault();
+    
+    // Get form values
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value.trim();
+    
+    // Validate form
+    if (!username || !password) {
+        showLoginError('Please enter both username and password');
+        return;
+    }
+    
+    // Clear previous errors
+    hideLoginError();
+    
+    // Send login request
+    fetch('/api/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            username: username,
+            password: password
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(data => {
+                throw new Error(data.error || 'Login failed');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        // Login successful
+        hideLoginForm();
+        // Reload the page to initialize the authenticated session
+        window.location.reload();
+    })
+    .catch(error => {
+        showLoginError(error.message);
+    });
+}
+
+// Show login form
+function showLoginForm() {
+    if (loginContainer && mainContent) {
+        loginContainer.style.display = 'block';
+        mainContent.style.display = 'none';
+    }
+}
+
+// Hide login form
+function hideLoginForm() {
+    if (loginContainer && mainContent) {
+        loginContainer.style.display = 'none';
+        mainContent.style.display = 'block';
+    }
+}
+
+// Show login error message
+function showLoginError(message) {
+    if (loginError) {
+        loginError.textContent = message;
+        loginError.style.display = 'block';
+    }
+}
+
+// Hide login error message
+function hideLoginError() {
+    if (loginError) {
+        loginError.textContent = '';
+        loginError.style.display = 'none';
+    }
+}
+
+// Handle unauthorized responses globally
+function handleUnauthorizedResponse(response) {
+    if (response.status === 401) {
+        showLoginForm();
+        return Promise.reject('Unauthorized');
+    }
+    return response;
+}
+
+// Add global fetch interceptor for unauthorized responses
+const originalFetch = window.fetch;
+window.fetch = function(url, options) {
+    return originalFetch(url, options)
+        .then(response => {
+            if (response.status === 401) {
+                showLoginForm();
+                return Promise.reject('Unauthorized');
+            }
+            return response;
+        });
+};
