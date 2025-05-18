@@ -338,22 +338,39 @@ function fetchCashflowForecast() {
                     fit: 6750,
                     completion: 2250
                 }
-            ];
-            updateCashflowForecast(forecastData);
-        });
-}
-
-function updateCashflowForecast(data) {
-    // Update cashflow chart
-    const labels = data.map(month => month.month);
-    const values = data.map(month => month.total);
     
-    // This would update the Chart.js chart
-    if (window.cashflowChart) {
-        window.cashflowChart.data.labels = labels;
-        window.cashflowChart.data.datasets[0].data = values;
-        window.cashflowChart.update();
+    // Update current month breakdown
+    const currentMonth = data[0];
+    const currentMonthTotal = document.getElementById('current-month-total');
+    if (currentMonthTotal) {
+        currentMonthTotal.textContent = `£${currentMonth.total}`;
     }
+    
+    // Update progress bars with null checks
+    const depositProgress = document.getElementById('deposit-progress');
+    if (depositProgress) {
+        depositProgress.style.width = `${currentMonth.deposit / currentMonth.total * 100}%`;
+        depositProgress.textContent = `Deposits: £${currentMonth.deposit}`;
+    }
+    
+    const buildProgress = document.getElementById('build-progress');
+    if (buildProgress) {
+        buildProgress.style.width = `${currentMonth.build / currentMonth.total * 100}%`;
+        buildProgress.textContent = `Build: £${currentMonth.build}`;
+    }
+    
+    const fitProgress = document.getElementById('fit-progress');
+    if (fitProgress) {
+        fitProgress.style.width = `${currentMonth.fit / currentMonth.total * 100}%`;
+        fitProgress.textContent = `Fit: £${currentMonth.fit}`;
+    }
+    
+    const completionProgress = document.getElementById('completion-progress');
+    if (completionProgress) {
+        completionProgress.style.width = `${currentMonth.completion / currentMonth.total * 100}%`;
+        completionProgress.textContent = `Completion: £${currentMonth.completion}`;
+    }
+}
     
     // Update current month breakdown
     const currentMonth = data[0];
@@ -480,14 +497,35 @@ function updateIncomeHistory(data) {
         window.incomeChart.update();
     }
     
-    // Update total
-    document.getElementById('income-history-total').textContent = `£${data.total_income}`;
+    // Update total with null check
+    const incomeHistoryTotal = document.getElementById('income-history-total');
+    if (incomeHistoryTotal) {
+        incomeHistoryTotal.textContent = `£${data.total_income}`;
+    }
     
-    // Update percentages
-    document.getElementById('deposit-percentage').textContent = `Deposits: ${data.percentages.deposit}%`;
-    document.getElementById('build-percentage').textContent = `Build: ${data.percentages.build}%`;
-    document.getElementById('fit-percentage').textContent = `Fit: ${data.percentages.fit}%`;
-    document.getElementById('completion-percentage').textContent = `Completion: ${data.percentages.completion}%`;
+    // Update percentages with null checks
+    const depositPercentage = document.getElementById('deposit-percentage');
+    if (depositPercentage) {
+        depositPercentage.textContent = `Deposits: ${data.percentages.deposit}%`;
+    }
+    
+    const buildPercentage = document.getElementById('build-percentage');
+    if (buildPercentage) {
+        buildPercentage.textContent = `Build: ${data.percentages.build}%`;
+    }
+    
+    const fitPercentage = document.getElementById('fit-percentage');
+    if (fitPercentage) {
+        fitPercentage.textContent = `Fit: ${data.percentages.fit}%`;
+    }
+    
+    const completionPercentage = document.getElementById('completion-percentage');
+    if (completionPercentage) {
+        completionPercentage.textContent = `Completion: ${data.percentages.completion}%`;
+    }
+}
+
+
 }
 function fetchCurrentJobs() {
     // API call to get current jobs
