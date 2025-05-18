@@ -31,7 +31,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login'
+login_manager.login_view = 'index'
 
 # Register blueprints
 app.register_blueprint(user_bp)
@@ -45,6 +45,10 @@ app.register_blueprint(report_bp)
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+@app.route('/login')
+def login():
+    return send_from_directory('static', 'index.html')
 
 @app.route('/test')
 def test():
