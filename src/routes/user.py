@@ -15,7 +15,7 @@ def health_check():
         'user': current_user.to_dict() if current_user.is_authenticated else None
     })
 
-@user_bp.route('/api/login', methods=['POST'])
+@user_bp.route('/login', methods=['POST'])
 def login():
     """Handle user login"""
     data = request.get_json()
