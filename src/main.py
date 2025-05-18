@@ -5,7 +5,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))  # DON'T CHANGE T
 from flask import Flask, render_template, send_from_directory, jsonify
 from flask_login import LoginManager, current_user
 from flask_cors import CORS
-from src.models.user import db, User
+from src.models import db
+from src.models.user import User
 from src.routes.user import user_bp
 from src.routes.client import client_bp
 from src.routes.quote import quote_bp
