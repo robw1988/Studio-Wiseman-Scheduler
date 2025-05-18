@@ -70,10 +70,6 @@ def index():
 def static_files(path):
     return send_from_directory('static', path)
 
-@app.route('/api/health')
-def health_check():
-    return jsonify({'status': 'ok'})
-
 @app.errorhandler(404)
 def not_found(e):
     return jsonify({'error': 'Not found'}), 404
