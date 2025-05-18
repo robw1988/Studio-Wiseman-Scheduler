@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Check if user is authenticated
 function checkAuthStatus() {
     // Make a request to a protected endpoint
-    fetch('/api/health')
+    fetch('/api/users/health')
         .then(response => {
             if (response.status === 401) {
                 // User is not authenticated, show login form
