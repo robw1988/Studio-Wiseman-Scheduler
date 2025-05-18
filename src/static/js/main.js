@@ -9,6 +9,61 @@ let clientData = [];
 let staffData = [];
 let paymentData = [];
 
+// Initialize Chart.js objects
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize cashflow chart
+    const cashflowCtx = document.getElementById('cashflow-chart');
+    if (cashflowCtx) {
+        window.cashflowChart = new Chart(cashflowCtx, {
+            type: 'bar',
+            data: {
+                labels: ['May 2025', 'June 2025'],
+                datasets: [{
+                    label: 'Projected Income',
+                    data: [32500, 45000],
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+    
+    // Initialize income chart
+    const incomeCtx = document.getElementById('income-chart');
+    if (incomeCtx) {
+        window.incomeChart = new Chart(incomeCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Deposits', 'Build', 'Fit', 'Completion'],
+                datasets: [{
+                    data: [45, 25, 20, 10],
+                    backgroundColor: [
+                        'rgba(13, 110, 253, 0.7)',
+                        'rgba(25, 135, 84, 0.7)',
+                        'rgba(13, 202, 240, 0.7)',
+                        'rgba(255, 193, 7, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgba(13, 110, 253, 1)',
+                        'rgba(25, 135, 84, 1)',
+                        'rgba(13, 202, 240, 1)',
+                        'rgba(255, 193, 7, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            }
+        });
+    }
+});
+
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     // Check if user is logged in
