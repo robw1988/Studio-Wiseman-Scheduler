@@ -154,6 +154,7 @@ function navigateTo(view) {
             loadDashboard();
     }
 }
+
 // Dashboard functions
 function loadDashboard() {
     console.log('Loading dashboard');
@@ -209,10 +210,25 @@ function fetchDashboardSummary() {
 
 function updateDashboardSummary(data) {
     // Update dashboard summary cards
-    document.getElementById('active-jobs-count').textContent = data.active_jobs;
-    document.getElementById('pending-quotes-count').textContent = data.pending_quotes;
-    document.getElementById('upcoming-payments-amount').textContent = `£${data.upcoming_payment_total}`;
-    document.getElementById('clients-updates-count').textContent = data.clients_needing_updates;
+    const activeJobsCount = document.getElementById('active-jobs-count');
+    if (activeJobsCount) {
+        activeJobsCount.textContent = data.active_jobs;
+    }
+    
+    const pendingQuotesCount = document.getElementById('pending-quotes-count');
+    if (pendingQuotesCount) {
+        pendingQuotesCount.textContent = data.pending_quotes;
+    }
+    
+    const upcomingPaymentsAmount = document.getElementById('upcoming-payments-amount');
+    if (upcomingPaymentsAmount) {
+        upcomingPaymentsAmount.textContent = `£${data.upcoming_payment_total}`;
+    }
+    
+    const clientsUpdatesCount = document.getElementById('clients-updates-count');
+    if (clientsUpdatesCount) {
+        clientsUpdatesCount.textContent = data.clients_needing_updates;
+    }
 }
 
 function fetchWeeklyCalendar() {
@@ -286,6 +302,7 @@ function updateWeeklyCalendar(data) {
     // This would populate the calendar grid with events
     console.log('Calendar data loaded', eventsByDate);
 }
+
 function fetchCashflowForecast() {
     // API call to get cashflow forecast
     fetch('/api/reports/cashflow-forecast')
@@ -338,6 +355,22 @@ function fetchCashflowForecast() {
                     fit: 6750,
                     completion: 2250
                 }
+            ];
+            updateCashflowForecast(forecastData);
+        });
+}
+
+function updateCashflowForecast(data) {
+    // Update cashflow chart
+    const labels = data.map(month => month.month);
+    const values = data.map(month => month.total);
+    
+    // This would update the Chart.js chart
+    if (window.cashflowChart) {
+        window.cashflowChart.data.labels = labels;
+        window.cashflowChart.data.datasets[0].data = values;
+        window.cashflowChart.update();
+    }
     
     // Update current month breakdown
     const currentMonth = data[0];
@@ -371,24 +404,7 @@ function fetchCashflowForecast() {
         completionProgress.textContent = `Completion: £${currentMonth.completion}`;
     }
 }
-    
-    // Update current month breakdown
-    const currentMonth = data[0];
-    document.getElementById('current-month-total').textContent = `£${currentMonth.total}`;
-    
-    // Update progress bars
-    document.getElementById('deposit-progress').style.width = `${currentMonth.deposit / currentMonth.total * 100}%`;
-    document.getElementById('deposit-progress').textContent = `Deposits: £${currentMonth.deposit}`;
-    
-    document.getElementById('build-progress').style.width = `${currentMonth.build / currentMonth.total * 100}%`;
-    document.getElementById('build-progress').textContent = `Build: £${currentMonth.build}`;
-    
-    document.getElementById('fit-progress').style.width = `${currentMonth.fit / currentMonth.total * 100}%`;
-    document.getElementById('fit-progress').textContent = `Fit: £${currentMonth.fit}`;
-    
-    document.getElementById('completion-progress').style.width = `${currentMonth.completion / currentMonth.total * 100}%`;
-    document.getElementById('completion-progress').textContent = `Completion: £${currentMonth.completion}`;
-}
+
 function fetchIncomeHistory() {
     // API call to get income history
     fetch('/api/reports/income-history')
@@ -525,8 +541,6 @@ function updateIncomeHistory(data) {
     }
 }
 
-
-}
 function fetchCurrentJobs() {
     // API call to get current jobs
     fetch('/api/jobs/current')
@@ -542,7 +556,9 @@ function fetchCurrentJobs() {
                             client_name: 'John Smith',
                             stage: 'Build',
                             build_start_date: '2025-05-19',
+                            build_team: ['James Wilson', 'Robert Johnson'],
                             fitting_date: '2025-05-26',
+                            fit_team: ['William Davis'],
                             status: 'On Track'
                         },
                         {
@@ -551,8 +567,32 @@ function fetchCurrentJobs() {
                             client_name: 'Emma Johnson',
                             stage: 'Spray',
                             build_start_date: '2025-05-12',
+                            build_team: ['Daniel Smith'],
                             fitting_date: '2025-05-22',
+                            fit_team: ['William Davis'],
                             status: 'Delayed'
+                        },
+                        {
+                            id: 3,
+                            name: 'Notting Hill Bookcase',
+                            client_name: 'Michael Brown',
+                            stage: 'Fit',
+                            build_start_date: '2025-05-05',
+                            build_team: ['James Wilson'],
+                            fitting_date: '2025-05-15',
+                            fit_team: ['William Davis', 'Robert Johnson'],
+                            status: 'Issue'
+                        },
+                        {
+                            id: 4,
+                            name: 'Kensington Office',
+                            client_name: 'Sarah Wilson',
+                            stage: 'Build',
+                            build_start_date: '2025-05-26',
+                            build_team: ['Daniel Smith', 'James Wilson'],
+                            fitting_date: '2025-06-05',
+                            fit_team: ['William Davis'],
+                            status: 'Scheduled'
                         }
                     ]);
                 }
@@ -571,7 +611,9 @@ function fetchCurrentJobs() {
                     client_name: 'John Smith',
                     stage: 'Build',
                     build_start_date: '2025-05-19',
+                    build_team: ['James Wilson', 'Robert Johnson'],
                     fitting_date: '2025-05-26',
+                    fit_team: ['William Davis'],
                     status: 'On Track'
                 },
                 {
@@ -580,8 +622,32 @@ function fetchCurrentJobs() {
                     client_name: 'Emma Johnson',
                     stage: 'Spray',
                     build_start_date: '2025-05-12',
+                    build_team: ['Daniel Smith'],
                     fitting_date: '2025-05-22',
+                    fit_team: ['William Davis'],
                     status: 'Delayed'
+                },
+                {
+                    id: 3,
+                    name: 'Notting Hill Bookcase',
+                    client_name: 'Michael Brown',
+                    stage: 'Fit',
+                    build_start_date: '2025-05-05',
+                    build_team: ['James Wilson'],
+                    fitting_date: '2025-05-15',
+                    fit_team: ['William Davis', 'Robert Johnson'],
+                    status: 'Issue'
+                },
+                {
+                    id: 4,
+                    name: 'Kensington Office',
+                    client_name: 'Sarah Wilson',
+                    stage: 'Build',
+                    build_start_date: '2025-05-26',
+                    build_team: ['Daniel Smith', 'James Wilson'],
+                    fitting_date: '2025-06-05',
+                    fit_team: ['William Davis'],
+                    status: 'Scheduled'
                 }
             ];
             updateCurrentJobs(jobsData);
@@ -591,42 +657,69 @@ function fetchCurrentJobs() {
 function updateCurrentJobs(data) {
     // Update current jobs table
     const tableBody = document.querySelector('#current-jobs-table tbody');
-    if (!tableBody) return;
+    if (!tableBody) {
+        console.error('Current jobs table body not found');
+        return;
+    }
     
+    // Clear existing rows
     tableBody.innerHTML = '';
     
+    // Add new rows
     data.forEach(job => {
         const row = document.createElement('tr');
         
         // Format dates
-        const buildDate = new Date(job.build_start_date).toLocaleDateString('en-GB', {
-            year: 'numeric',
+        const buildStartDate = new Date(job.build_start_date);
+        const formattedBuildDate = buildStartDate.toLocaleDateString('en-GB', {
+            day: 'numeric',
             month: 'short',
-            day: 'numeric'
+            year: 'numeric'
         });
         
-        const fittingDate = new Date(job.fitting_date).toLocaleDateString('en-GB', {
-            year: 'numeric',
+        const fittingDate = new Date(job.fitting_date);
+        const formattedFittingDate = fittingDate.toLocaleDateString('en-GB', {
+            day: 'numeric',
             month: 'short',
-            day: 'numeric'
+            year: 'numeric'
         });
         
-        // Set status badge class
-        let statusClass = 'bg-success';
-        if (job.status === 'Delayed') statusClass = 'bg-warning';
-        if (job.status === 'Issue') statusClass = 'bg-danger';
-        if (job.status === 'Scheduled') statusClass = 'bg-info';
+        // Set status badge color
+        let statusClass = 'bg-secondary';
+        switch(job.status) {
+            case 'On Track':
+                statusClass = 'bg-success';
+                break;
+            case 'Delayed':
+                statusClass = 'bg-warning';
+                break;
+            case 'Issue':
+                statusClass = 'bg-danger';
+                break;
+            case 'Scheduled':
+                statusClass = 'bg-info';
+                break;
+        }
         
+        // Create row content
         row.innerHTML = `
             <td>${job.name}</td>
             <td>${job.client_name}</td>
             <td>${job.stage}</td>
-            <td>${buildDate}</td>
-            <td>${fittingDate}</td>
+            <td>${formattedBuildDate}</td>
+            <td>${formattedFittingDate}</td>
             <td><span class="badge ${statusClass} status-badge">${job.status}</span></td>
         `;
         
         tableBody.appendChild(row);
+    });
+    
+    // Add event listeners to rows
+    document.querySelectorAll('#current-jobs-table tbody tr').forEach((row, index) => {
+        row.addEventListener('click', function() {
+            const jobId = data[index].id;
+            openJobEditModal(jobId);
+        });
     });
 }
 
@@ -683,7 +776,7 @@ function fetchJobs() {
         })
         .then(data => {
             jobData = data;
-            updateJobsTable(jobData);
+            updateJobsTable(data);
         })
         .catch(error => {
             console.error('Error fetching jobs:', error);
@@ -717,50 +810,8 @@ function fetchJobs() {
 }
 
 function updateJobsTable(data) {
-    // Update jobs table
-    const tableBody = document.querySelector('#jobs-table tbody');
-    if (!tableBody) return;
-    
-    tableBody.innerHTML = '';
-    
-    data.forEach(job => {
-        const row = document.createElement('tr');
-        
-        // Format dates
-        const buildDate = new Date(job.build_start_date).toLocaleDateString('en-GB', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-        
-        const fittingDate = new Date(job.fitting_date).toLocaleDateString('en-GB', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-        
-        // Set status badge class
-        let statusClass = 'bg-success';
-        if (job.status === 'Delayed') statusClass = 'bg-warning';
-        if (job.status === 'Issue') statusClass = 'bg-danger';
-        if (job.status === 'Scheduled') statusClass = 'bg-info';
-        
-        row.innerHTML = `
-            <td>${job.name}</td>
-            <td>${job.client_name}</td>
-            <td>${job.stage}</td>
-            <td>${buildDate}</td>
-            <td>${fittingDate}</td>
-            <td><span class="badge ${statusClass} status-badge">${job.status}</span></td>
-            <td>${job.build_team.join(', ')}</td>
-            <td>${job.fit_team.join(', ')}</td>
-            <td>
-                <button class="btn btn-sm btn-primary edit-job-btn" data-job-id="${job.id}">Edit</button>
-            </td>
-        `;
-        
-        tableBody.appendChild(row);
-    });
+    // This would update the jobs table in the jobs view
+    console.log('Jobs data would be displayed here', data);
     
     // Add event listeners to edit buttons
     document.querySelectorAll('.edit-job-btn').forEach(btn => {
@@ -800,4 +851,3 @@ function loadReports() {
 function openJobEditModal(jobId) {
     console.log(`Edit modal for job ${jobId} would open here`);
 }
-
