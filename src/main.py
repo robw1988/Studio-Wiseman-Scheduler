@@ -41,7 +41,7 @@ def unauthorized():
     return jsonify({"error": "Unauthorized access", "login_required": True}), 401
 
 # Register blueprints
-app.register_blueprint(user_bp)
+app.register_blueprint(user_bp, url_prefix='/api/users')
 app.register_blueprint(client_bp)
 app.register_blueprint(quote_bp)
 app.register_blueprint(job_bp)
