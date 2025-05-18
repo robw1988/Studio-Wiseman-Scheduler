@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('logout')) {
         console.log('Detected logout parameter, showing login form');
+        sessionStorage.removeItem('authenticated');
         showLoginForm();
         return;
     }
@@ -54,39 +55,41 @@ document.addEventListener('DOMContentLoaded', function() {
 function checkAuthStatus() {
     console.log('Checking authentication status...');
     
-    // Force login form to show initially
-    if (window.location.pathname === '/login') {
-        console.log('On login page, showing login form');
+    // Force login form to show on initial page load if not authenticated in session
+    if (!sessionStorage.getItem('authenticated')) {
+        console.log('No authenticated session found, showing login form');
         showLoginForm();
         return;
     }
     
-    // Make a request to a protected endpoint
+    // If we have a session, still verify with backend
     fetch('/api/users/health')
         .then(response => {
             console.log('Auth check response status:', response.status);
             if (response.status === 401) {
                 // User is not authenticated, show login form
-                isAuthenticated = false;
+                sessionStorage.removeItem('authenticated');
                 showLoginForm();
                 return Promise.reject('Unauthorized');
             }
-            isAuthenticated = true;
             return response.json();
         })
         .then(data => {
             // User is authenticated, hide login form and show main content
             console.log('User is authenticated:', data);
+            sessionStorage.setItem('authenticated', 'true');
             hideLoginForm();
         })
         .catch(error => {
             if (error === 'Unauthorized') {
                 // Already handled above
                 console.log('User needs to log in');
+                sessionStorage.removeItem('authenticated');
                 showLoginForm();
             } else {
                 console.error('Error checking auth status:', error);
                 // If there's any error, show the login form as a fallback
+                sessionStorage.removeItem('authenticated');
                 showLoginForm();
             }
         });
@@ -133,7 +136,7 @@ function handleLogin(event) {
     .then(data => {
         // Login successful
         console.log('Login successful:', data);
-        isAuthenticated = true;
+        sessionStorage.setItem('authenticated', 'true');
         hideLoginForm();
         // Reload the page to initialize the authenticated session
         window.location.reload();
@@ -151,6 +154,7 @@ function handleLogout(event) {
     }
     
     console.log('Logging out...');
+    sessionStorage.removeItem('authenticated');
     
     // Try both POST and GET methods for logout
     fetch('/api/users/logout', {
@@ -173,15 +177,12 @@ function handleLogout(event) {
     })
     .then(data => {
         console.log('Logout successful:', data);
-        // Set authenticated state to false
-        isAuthenticated = false;
         // Redirect to login page with logout parameter
         window.location.href = '/?logout=true';
     })
     .catch(error => {
         console.error('Logout error:', error);
         // Even if there's an error, try to show the login form
-        isAuthenticated = false;
         // Redirect to login page with logout parameter
         window.location.href = '/?logout=true';
     });
@@ -232,7 +233,7 @@ function hideLoginError() {
 // Handle unauthorized responses globally
 function handleUnauthorizedResponse(response) {
     if (response.status === 401) {
-        isAuthenticated = false;
+        sessionStorage.removeItem('authenticated');
         showLoginForm();
         return Promise.reject('Unauthorized');
     }
@@ -246,7 +247,7 @@ window.fetch = function(url, options) {
         .then(response => {
             if (response.status === 401) {
                 console.log('Unauthorized response detected:', url);
-                isAuthenticated = false;
+                sessionStorage.removeItem('authenticated');
                 showLoginForm();
                 return Promise.reject('Unauthorized');
             }
