@@ -17,6 +17,9 @@ from src.routes.report import report_bp
 app = Flask(__name__)
 CORS(app)
 
+# Enable debug mode
+app.debug = True
+
 # Configuration
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-for-testing')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///cabinetry_scheduler.db')
@@ -43,6 +46,10 @@ app.register_blueprint(report_bp)
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+@app.route('/test')
+def test():
+    return jsonify({"status": "ok", "message": "Test route is working"})
+
 @app.route('/')
 def index():
     return send_from_directory('static', 'index.html')
@@ -61,7 +68,8 @@ def not_found(e):
 
 @app.errorhandler(500)
 def server_error(e):
-    return jsonify({'error': 'Server error'}), 500
+    app.logger.error(f"500 error: {str(e)}")
+    return jsonify({'error': f'Server error: {str(e)}'}), 500
 
 # Create database tables
 with app.app_context():
