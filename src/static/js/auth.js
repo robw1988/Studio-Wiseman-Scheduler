@@ -117,7 +117,7 @@ function handleLogin(event) {
     hideLoginError();
     
     // Send login request
-    fetch('/api/users/login', {
+    fetch('/api/login', {  // FIXED: Using correct endpoint path
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -165,7 +165,7 @@ function handleLogout(event) {
     console.log('Logging out...');
     
     // Try POST first, then GET if POST fails
-    fetch('/api/users/logout', {
+    fetch('/api/logout', {  // FIXED: Using correct endpoint path
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -195,7 +195,7 @@ function handleLogout(event) {
     .catch(error => {
         console.error('Logout error:', error);
         // Try GET method as fallback
-        fetch('/api/users/logout', { method: 'GET' })
+        fetch('/api/logout', { method: 'GET' })  // FIXED: Using correct endpoint path
             .then(() => {
                 console.log('Logout successful via GET fallback');
                 completeLogout();
