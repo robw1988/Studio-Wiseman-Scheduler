@@ -9,8 +9,21 @@ let clientData = [];
 let staffData = [];
 let paymentData = [];
 
+// Function to initialize the dashboard - made global for auth.js to call
+window.initializeDashboard = function() {
+    console.log('Initializing dashboard from window.initializeDashboard...');
+    
+    // Set up navigation event listeners
+    setupNavigation();
+    
+    // Load initial view (dashboard)
+    loadDashboard();
+};
+
 // Initialize Chart.js objects
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Main.js DOMContentLoaded event fired');
+    
     // Initialize cashflow chart
     const cashflowCtx = document.getElementById('cashflow-chart');
     if (cashflowCtx) {
@@ -62,17 +75,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-});
-
-// Initialize the application
-document.addEventListener('DOMContentLoaded', function() {
+    
     // Check if user is logged in
     if (checkAuthStatus()) {
-        // Set up navigation event listeners
-        setupNavigation();
-        
-        // Load initial view (dashboard)
-        loadDashboard();
+        // Initialize dashboard directly if already authenticated
+        window.initializeDashboard();
     } else {
         console.log('Authentication required before loading dashboard');
     }
@@ -101,18 +108,25 @@ function checkAuthStatus() {
 }
 
 function setupNavigation() {
+    console.log('Setting up navigation event listeners');
+    
     // Add event listeners to navigation links
     const navLinks = document.querySelectorAll('.nav-link');
     navLinks.forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             const view = this.getAttribute('data-view') || 'dashboard';
+            console.log('Navigation clicked:', view);
             navigateTo(view);
         });
     });
+    
+    console.log('Navigation setup complete with', document.querySelectorAll('.nav-link').length, 'links');
 }
 
 function navigateTo(view) {
+    console.log('Navigating to view:', view);
+    
     // Update current view
     currentView = view;
     
@@ -177,7 +191,9 @@ function loadDashboard() {
 
 function fetchDashboardSummary() {
     // API call to get dashboard summary
-    fetch('/api/reports/dashboard-summary')
+    fetch('/api/reports/dashboard-summary', {
+        credentials: 'include' // Ensure cookies are sent with request
+    })
         .then(response => {
             if (!response.ok) {
                 // If API endpoint doesn't exist yet, use mock data
@@ -233,7 +249,9 @@ function updateDashboardSummary(data) {
 
 function fetchWeeklyCalendar() {
     // API call to get weekly calendar data
-    fetch('/api/jobs/calendar/weekly')
+    fetch('/api/jobs/calendar/weekly', {
+        credentials: 'include' // Ensure cookies are sent with request
+    })
         .then(response => {
             if (!response.ok) {
                 // If API endpoint doesn't exist yet, use mock data
@@ -305,7 +323,9 @@ function updateWeeklyCalendar(data) {
 
 function fetchCashflowForecast() {
     // API call to get cashflow forecast
-    fetch('/api/reports/cashflow-forecast')
+    fetch('/api/reports/cashflow-forecast', {
+        credentials: 'include' // Ensure cookies are sent with request
+    })
         .then(response => {
             if (!response.ok) {
                 // If API endpoint doesn't exist yet, use mock data
@@ -407,7 +427,9 @@ function updateCashflowForecast(data) {
 
 function fetchIncomeHistory() {
     // API call to get income history
-    fetch('/api/reports/income-history')
+    fetch('/api/reports/income-history', {
+        credentials: 'include' // Ensure cookies are sent with request
+    })
         .then(response => {
             if (!response.ok) {
                 // If API endpoint doesn't exist yet, use mock data
@@ -497,53 +519,49 @@ function fetchIncomeHistory() {
 }
 
 function updateIncomeHistory(data) {
-    // Update income history chart
-    const labels = ['Deposits', 'Build', 'Fit', 'Completion'];
-    const values = [
-        data.percentages.deposit,
-        data.percentages.build,
-        data.percentages.fit,
-        data.percentages.completion
-    ];
-    
-    // This would update the Chart.js chart
+    // Update income chart
     if (window.incomeChart) {
-        window.incomeChart.data.labels = labels;
-        window.incomeChart.data.datasets[0].data = values;
+        window.incomeChart.data.datasets[0].data = [
+            data.percentages.deposit,
+            data.percentages.build,
+            data.percentages.fit,
+            data.percentages.completion
+        ];
         window.incomeChart.update();
     }
     
-    // Update total with null check
-    const incomeHistoryTotal = document.getElementById('income-history-total');
-    if (incomeHistoryTotal) {
-        incomeHistoryTotal.textContent = `£${data.total_income}`;
+    // Update total income
+    const totalIncome = document.getElementById('total-income');
+    if (totalIncome) {
+        totalIncome.textContent = `£${data.total_income}`;
     }
     
-    // Update percentages with null checks
-    const depositPercentage = document.getElementById('deposit-percentage');
-    if (depositPercentage) {
-        depositPercentage.textContent = `Deposits: ${data.percentages.deposit}%`;
-    }
-    
-    const buildPercentage = document.getElementById('build-percentage');
-    if (buildPercentage) {
-        buildPercentage.textContent = `Build: ${data.percentages.build}%`;
-    }
-    
-    const fitPercentage = document.getElementById('fit-percentage');
-    if (fitPercentage) {
-        fitPercentage.textContent = `Fit: ${data.percentages.fit}%`;
-    }
-    
-    const completionPercentage = document.getElementById('completion-percentage');
-    if (completionPercentage) {
-        completionPercentage.textContent = `Completion: ${data.percentages.completion}%`;
+    // Update monthly breakdown table
+    const incomeTable = document.getElementById('income-table');
+    if (incomeTable && incomeTable.querySelector('tbody')) {
+        const tbody = incomeTable.querySelector('tbody');
+        tbody.innerHTML = '';
+        
+        data.months.forEach(month => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${month.month}</td>
+                <td>£${month.total}</td>
+                <td>£${month.deposit}</td>
+                <td>£${month.build}</td>
+                <td>£${month.fit}</td>
+                <td>£${month.completion}</td>
+            `;
+            tbody.appendChild(row);
+        });
     }
 }
 
 function fetchCurrentJobs() {
     // API call to get current jobs
-    fetch('/api/jobs/current')
+    fetch('/api/jobs/current', {
+        credentials: 'include' // Ensure cookies are sent with request
+    })
         .then(response => {
             if (!response.ok) {
                 // If API endpoint doesn't exist yet, use mock data
@@ -551,48 +569,28 @@ function fetchCurrentJobs() {
                     console.warn('Current jobs API not implemented yet, using mock data');
                     return Promise.resolve([
                         {
-                            id: 1,
-                            name: 'Hampstead Kitchen',
+                            job_id: 1,
+                            job_name: 'Hampstead Kitchen',
                             client_name: 'John Smith',
                             stage: 'Build',
-                            build_start_date: '2025-05-19',
-                            build_team: ['James Wilson', 'Robert Johnson'],
-                            fitting_date: '2025-05-26',
-                            fit_team: ['William Davis'],
-                            status: 'On Track'
+                            progress: 65,
+                            deadline: '2025-06-15'
                         },
                         {
-                            id: 2,
-                            name: 'Chelsea Wardrobe',
+                            job_id: 2,
+                            job_name: 'Chelsea Wardrobe',
                             client_name: 'Emma Johnson',
                             stage: 'Spray',
-                            build_start_date: '2025-05-12',
-                            build_team: ['Daniel Smith'],
-                            fitting_date: '2025-05-22',
-                            fit_team: ['William Davis'],
-                            status: 'Delayed'
+                            progress: 40,
+                            deadline: '2025-06-01'
                         },
                         {
-                            id: 3,
-                            name: 'Notting Hill Bookcase',
+                            job_id: 3,
+                            job_name: 'Kensington Bathroom',
                             client_name: 'Michael Brown',
-                            stage: 'Fit',
-                            build_start_date: '2025-05-05',
-                            build_team: ['James Wilson'],
-                            fitting_date: '2025-05-15',
-                            fit_team: ['William Davis', 'Robert Johnson'],
-                            status: 'Issue'
-                        },
-                        {
-                            id: 4,
-                            name: 'Kensington Office',
-                            client_name: 'Sarah Wilson',
-                            stage: 'Build',
-                            build_start_date: '2025-05-26',
-                            build_team: ['Daniel Smith', 'James Wilson'],
-                            fitting_date: '2025-06-05',
-                            fit_team: ['William Davis'],
-                            status: 'Scheduled'
+                            stage: 'Design',
+                            progress: 20,
+                            deadline: '2025-07-10'
                         }
                     ]);
                 }
@@ -606,48 +604,28 @@ function fetchCurrentJobs() {
             // Fallback to mock data on error
             const jobsData = [
                 {
-                    id: 1,
-                    name: 'Hampstead Kitchen',
+                    job_id: 1,
+                    job_name: 'Hampstead Kitchen',
                     client_name: 'John Smith',
                     stage: 'Build',
-                    build_start_date: '2025-05-19',
-                    build_team: ['James Wilson', 'Robert Johnson'],
-                    fitting_date: '2025-05-26',
-                    fit_team: ['William Davis'],
-                    status: 'On Track'
+                    progress: 65,
+                    deadline: '2025-06-15'
                 },
                 {
-                    id: 2,
-                    name: 'Chelsea Wardrobe',
+                    job_id: 2,
+                    job_name: 'Chelsea Wardrobe',
                     client_name: 'Emma Johnson',
                     stage: 'Spray',
-                    build_start_date: '2025-05-12',
-                    build_team: ['Daniel Smith'],
-                    fitting_date: '2025-05-22',
-                    fit_team: ['William Davis'],
-                    status: 'Delayed'
+                    progress: 40,
+                    deadline: '2025-06-01'
                 },
                 {
-                    id: 3,
-                    name: 'Notting Hill Bookcase',
+                    job_id: 3,
+                    job_name: 'Kensington Bathroom',
                     client_name: 'Michael Brown',
-                    stage: 'Fit',
-                    build_start_date: '2025-05-05',
-                    build_team: ['James Wilson'],
-                    fitting_date: '2025-05-15',
-                    fit_team: ['William Davis', 'Robert Johnson'],
-                    status: 'Issue'
-                },
-                {
-                    id: 4,
-                    name: 'Kensington Office',
-                    client_name: 'Sarah Wilson',
-                    stage: 'Build',
-                    build_start_date: '2025-05-26',
-                    build_team: ['Daniel Smith', 'James Wilson'],
-                    fitting_date: '2025-06-05',
-                    fit_team: ['William Davis'],
-                    status: 'Scheduled'
+                    stage: 'Design',
+                    progress: 20,
+                    deadline: '2025-07-10'
                 }
             ];
             updateCurrentJobs(jobsData);
@@ -656,198 +634,74 @@ function fetchCurrentJobs() {
 
 function updateCurrentJobs(data) {
     // Update current jobs table
-    const tableBody = document.querySelector('#current-jobs-table tbody');
-    if (!tableBody) {
-        console.error('Current jobs table body not found');
-        return;
+    const jobsTable = document.getElementById('current-jobs-table');
+    if (jobsTable && jobsTable.querySelector('tbody')) {
+        const tbody = jobsTable.querySelector('tbody');
+        tbody.innerHTML = '';
+        
+        data.forEach(job => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${job.job_name}</td>
+                <td>${job.client_name}</td>
+                <td>${job.stage}</td>
+                <td>
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" style="width: ${job.progress}%;" aria-valuenow="${job.progress}" aria-valuemin="0" aria-valuemax="100">${job.progress}%</div>
+                    </div>
+                </td>
+                <td>${job.deadline}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary view-job-btn" data-job-id="${job.job_id}">View</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+        
+        // Add event listeners to view buttons
+        const viewButtons = tbody.querySelectorAll('.view-job-btn');
+        viewButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const jobId = this.getAttribute('data-job-id');
+                viewJob(jobId);
+            });
+        });
     }
-    
-    // Clear existing rows
-    tableBody.innerHTML = '';
-    
-    // Add new rows
-    data.forEach(job => {
-        const row = document.createElement('tr');
-        
-        // Format dates
-        const buildStartDate = new Date(job.build_start_date);
-        const formattedBuildDate = buildStartDate.toLocaleDateString('en-GB', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric'
-        });
-        
-        const fittingDate = new Date(job.fitting_date);
-        const formattedFittingDate = fittingDate.toLocaleDateString('en-GB', {
-            day: 'numeric',
-            month: 'short',
-            year: 'numeric'
-        });
-        
-        // Set status badge color
-        let statusClass = 'bg-secondary';
-        switch(job.status) {
-            case 'On Track':
-                statusClass = 'bg-success';
-                break;
-            case 'Delayed':
-                statusClass = 'bg-warning';
-                break;
-            case 'Issue':
-                statusClass = 'bg-danger';
-                break;
-            case 'Scheduled':
-                statusClass = 'bg-info';
-                break;
-        }
-        
-        // Create row content
-        row.innerHTML = `
-            <td>${job.name}</td>
-            <td>${job.client_name}</td>
-            <td>${job.stage}</td>
-            <td>${formattedBuildDate}</td>
-            <td>${formattedFittingDate}</td>
-            <td><span class="badge ${statusClass} status-badge">${job.status}</span></td>
-        `;
-        
-        tableBody.appendChild(row);
-    });
-    
-    // Add event listeners to rows
-    document.querySelectorAll('#current-jobs-table tbody tr').forEach((row, index) => {
-        row.addEventListener('click', function() {
-            const jobId = data[index].id;
-            openJobEditModal(jobId);
-        });
-    });
 }
 
-// Workshop Jobs functions
-function loadJobs() {
-    console.log('Loading jobs');
-    
-    // Fetch job data
-    fetchJobs();
-    
-    // Fetch job schedule for Gantt view
-    fetchJobSchedule();
-    
-    // Fetch weekly calendar
-    fetchWeeklyCalendar();
-}
-
-function fetchJobs() {
-    // API call to get all jobs
-    fetch('/api/jobs')
-        .then(response => {
-            if (!response.ok) {
-                // If API endpoint doesn't exist yet, use mock data
-                if (response.status === 404) {
-                    console.warn('Jobs API not implemented yet, using mock data');
-                    return Promise.resolve([
-                        {
-                            id: 1,
-                            name: 'Hampstead Kitchen',
-                            client_name: 'John Smith',
-                            stage: 'Build',
-                            build_start_date: '2025-05-19',
-                            build_team: ['James Wilson', 'Robert Johnson'],
-                            fitting_date: '2025-05-26',
-                            fit_team: ['William Davis'],
-                            status: 'On Track'
-                        },
-                        {
-                            id: 2,
-                            name: 'Chelsea Wardrobe',
-                            client_name: 'Emma Johnson',
-                            stage: 'Spray',
-                            build_start_date: '2025-05-12',
-                            build_team: ['Daniel Smith'],
-                            fitting_date: '2025-05-22',
-                            fit_team: ['William Davis'],
-                            status: 'Delayed'
-                        }
-                    ]);
-                }
-                throw new Error('Failed to fetch jobs');
-            }
-            return response.json();
-        })
-        .then(data => {
-            jobData = data;
-            updateJobsTable(data);
-        })
-        .catch(error => {
-            console.error('Error fetching jobs:', error);
-            // Fallback to mock data on error
-            jobData = [
-                {
-                    id: 1,
-                    name: 'Hampstead Kitchen',
-                    client_name: 'John Smith',
-                    stage: 'Build',
-                    build_start_date: '2025-05-19',
-                    build_team: ['James Wilson', 'Robert Johnson'],
-                    fitting_date: '2025-05-26',
-                    fit_team: ['William Davis'],
-                    status: 'On Track'
-                },
-                {
-                    id: 2,
-                    name: 'Chelsea Wardrobe',
-                    client_name: 'Emma Johnson',
-                    stage: 'Spray',
-                    build_start_date: '2025-05-12',
-                    build_team: ['Daniel Smith'],
-                    fitting_date: '2025-05-22',
-                    fit_team: ['William Davis'],
-                    status: 'Delayed'
-                }
-            ];
-            updateJobsTable(jobData);
-        });
-}
-
-function updateJobsTable(data) {
-    // This would update the jobs table in the jobs view
-    console.log('Jobs data would be displayed here', data);
-    
-    // Add event listeners to edit buttons
-    document.querySelectorAll('.edit-job-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const jobId = this.getAttribute('data-job-id');
-            openJobEditModal(jobId);
-        });
-    });
-}
-
-function fetchJobSchedule() {
-    // This would make an API call to get job schedule
-    console.log('Job schedule would be fetched here');
+function viewJob(jobId) {
+    console.log('Viewing job:', jobId);
+    // This would navigate to the job details page
+    // For now, just log the action
 }
 
 // Placeholder functions for other views
 function loadQuotes() {
-    console.log('Quotes view would be loaded here');
+    console.log('Loading quotes view');
+    // This would load the quotes view
+}
+
+function loadJobs() {
+    console.log('Loading jobs view');
+    // This would load the jobs view
 }
 
 function loadClients() {
-    console.log('Clients view would be loaded here');
+    console.log('Loading clients view');
+    // This would load the clients view
 }
 
 function loadStaff() {
-    console.log('Staff view would be loaded here');
+    console.log('Loading staff view');
+    // This would load the staff view
 }
 
 function loadPayments() {
-    console.log('Payments view would be loaded here');
+    console.log('Loading payments view');
+    // This would load the payments view
 }
 
 function loadReports() {
-    console.log('Reports view would be loaded here');
-}
-
-function openJobEditModal(jobId) {
-    console.log(`Edit modal for job ${jobId} would open here`);
+    console.log('Loading reports view');
+    // This would load the reports view
 }
