@@ -37,7 +37,7 @@ def login():
     
     return jsonify({'error': 'Invalid username or password'}), 401
 
-@user_bp.route('/api/logout', methods=['POST'])
+@user_bp.route('/logout', methods=['GET', 'POST'])
 @login_required
 def logout():
     """Handle user logout"""
