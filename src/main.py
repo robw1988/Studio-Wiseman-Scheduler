@@ -28,7 +28,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'index'
+login_manager.login_view = 'login'
 
 # Register blueprints
 app.register_blueprint(user_bp)
