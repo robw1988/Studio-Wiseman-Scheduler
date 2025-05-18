@@ -99,7 +99,6 @@ function navigateTo(view) {
             loadDashboard();
     }
 }
-
 // Dashboard functions
 function loadDashboard() {
     console.log('Loading dashboard');
@@ -128,12 +127,12 @@ function fetchDashboardSummary() {
                 // If API endpoint doesn't exist yet, use mock data
                 if (response.status === 404) {
                     console.warn('Dashboard summary API not implemented yet, using mock data');
-                    return {
+                    return Promise.resolve({
                         active_jobs: 12,
                         pending_quotes: 8,
                         upcoming_payment_total: 24500,
                         clients_needing_updates: 5
-                    };
+                    });
                 }
                 throw new Error('Failed to fetch dashboard summary');
             }
@@ -169,7 +168,7 @@ function fetchWeeklyCalendar() {
                 // If API endpoint doesn't exist yet, use mock data
                 if (response.status === 404) {
                     console.warn('Weekly calendar API not implemented yet, using mock data');
-                    return [
+                    return Promise.resolve([
                         {
                             job_id: 1,
                             job_name: 'Hampstead Kitchen',
@@ -186,7 +185,7 @@ function fetchWeeklyCalendar() {
                             stage: 'Spray',
                             team: []
                         }
-                    ];
+                    ]);
                 }
                 throw new Error('Failed to fetch weekly calendar');
             }
@@ -232,7 +231,6 @@ function updateWeeklyCalendar(data) {
     // This would populate the calendar grid with events
     console.log('Calendar data loaded', eventsByDate);
 }
-
 function fetchCashflowForecast() {
     // API call to get cashflow forecast
     fetch('/api/reports/cashflow-forecast')
@@ -241,7 +239,7 @@ function fetchCashflowForecast() {
                 // If API endpoint doesn't exist yet, use mock data
                 if (response.status === 404) {
                     console.warn('Cashflow forecast API not implemented yet, using mock data');
-                    return [
+                    return Promise.resolve([
                         {
                             month: 'May 2025',
                             total: 32500,
@@ -258,7 +256,7 @@ function fetchCashflowForecast() {
                             fit: 6750,
                             completion: 2250
                         }
-                    ];
+                    ]);
                 }
                 throw new Error('Failed to fetch cashflow forecast');
             }
@@ -319,7 +317,6 @@ function updateCashflowForecast(data) {
     document.getElementById('completion-progress').style.width = `${currentMonth.completion / currentMonth.total * 100}%`;
     document.getElementById('completion-progress').textContent = `Completion: £${currentMonth.completion}`;
 }
-
 function fetchIncomeHistory() {
     // API call to get income history
     fetch('/api/reports/income-history')
@@ -328,7 +325,7 @@ function fetchIncomeHistory() {
                 // If API endpoint doesn't exist yet, use mock data
                 if (response.status === 404) {
                     console.warn('Income history API not implemented yet, using mock data');
-                    return {
+                    return Promise.resolve({
                         months: [
                             {
                                 month: 'February 2025',
@@ -362,7 +359,7 @@ function fetchIncomeHistory() {
                             fit: 20,
                             completion: 10
                         }
-                    };
+                    });
                 }
                 throw new Error('Failed to fetch income history');
             }
@@ -437,7 +434,6 @@ function updateIncomeHistory(data) {
     document.getElementById('fit-percentage').textContent = `Fit: ${data.percentages.fit}%`;
     document.getElementById('completion-percentage').textContent = `Completion: ${data.percentages.completion}%`;
 }
-
 function fetchCurrentJobs() {
     // API call to get current jobs
     fetch('/api/jobs/current')
@@ -446,8 +442,269 @@ function fetchCurrentJobs() {
                 // If API endpoint doesn't exist yet, use mock data
                 if (response.status === 404) {
                     console.warn('Current jobs API not implemented yet, using mock data');
-                    return [
+                    return Promise.resolve([
                         {
                             id: 1,
-                       
-(Content truncated due to size limit. Use line ranges to read in chunks)
+                            name: 'Hampstead Kitchen',
+                            client_name: 'John Smith',
+                            stage: 'Build',
+                            build_start_date: '2025-05-19',
+                            fitting_date: '2025-05-26',
+                            status: 'On Track'
+                        },
+                        {
+                            id: 2,
+                            name: 'Chelsea Wardrobe',
+                            client_name: 'Emma Johnson',
+                            stage: 'Spray',
+                            build_start_date: '2025-05-12',
+                            fitting_date: '2025-05-22',
+                            status: 'Delayed'
+                        }
+                    ]);
+                }
+                throw new Error('Failed to fetch current jobs');
+            }
+            return response.json();
+        })
+        .then(data => updateCurrentJobs(data))
+        .catch(error => {
+            console.error('Error fetching current jobs:', error);
+            // Fallback to mock data on error
+            const jobsData = [
+                {
+                    id: 1,
+                    name: 'Hampstead Kitchen',
+                    client_name: 'John Smith',
+                    stage: 'Build',
+                    build_start_date: '2025-05-19',
+                    fitting_date: '2025-05-26',
+                    status: 'On Track'
+                },
+                {
+                    id: 2,
+                    name: 'Chelsea Wardrobe',
+                    client_name: 'Emma Johnson',
+                    stage: 'Spray',
+                    build_start_date: '2025-05-12',
+                    fitting_date: '2025-05-22',
+                    status: 'Delayed'
+                }
+            ];
+            updateCurrentJobs(jobsData);
+        });
+}
+
+function updateCurrentJobs(data) {
+    // Update current jobs table
+    const tableBody = document.querySelector('#current-jobs-table tbody');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '';
+    
+    data.forEach(job => {
+        const row = document.createElement('tr');
+        
+        // Format dates
+        const buildDate = new Date(job.build_start_date).toLocaleDateString('en-GB', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+        
+        const fittingDate = new Date(job.fitting_date).toLocaleDateString('en-GB', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+        
+        // Set status badge class
+        let statusClass = 'bg-success';
+        if (job.status === 'Delayed') statusClass = 'bg-warning';
+        if (job.status === 'Issue') statusClass = 'bg-danger';
+        if (job.status === 'Scheduled') statusClass = 'bg-info';
+        
+        row.innerHTML = `
+            <td>${job.name}</td>
+            <td>${job.client_name}</td>
+            <td>${job.stage}</td>
+            <td>${buildDate}</td>
+            <td>${fittingDate}</td>
+            <td><span class="badge ${statusClass} status-badge">${job.status}</span></td>
+        `;
+        
+        tableBody.appendChild(row);
+    });
+}
+
+// Workshop Jobs functions
+function loadJobs() {
+    console.log('Loading jobs');
+    
+    // Fetch job data
+    fetchJobs();
+    
+    // Fetch job schedule for Gantt view
+    fetchJobSchedule();
+    
+    // Fetch weekly calendar
+    fetchWeeklyCalendar();
+}
+
+function fetchJobs() {
+    // API call to get all jobs
+    fetch('/api/jobs')
+        .then(response => {
+            if (!response.ok) {
+                // If API endpoint doesn't exist yet, use mock data
+                if (response.status === 404) {
+                    console.warn('Jobs API not implemented yet, using mock data');
+                    return Promise.resolve([
+                        {
+                            id: 1,
+                            name: 'Hampstead Kitchen',
+                            client_name: 'John Smith',
+                            stage: 'Build',
+                            build_start_date: '2025-05-19',
+                            build_team: ['James Wilson', 'Robert Johnson'],
+                            fitting_date: '2025-05-26',
+                            fit_team: ['William Davis'],
+                            status: 'On Track'
+                        },
+                        {
+                            id: 2,
+                            name: 'Chelsea Wardrobe',
+                            client_name: 'Emma Johnson',
+                            stage: 'Spray',
+                            build_start_date: '2025-05-12',
+                            build_team: ['Daniel Smith'],
+                            fitting_date: '2025-05-22',
+                            fit_team: ['William Davis'],
+                            status: 'Delayed'
+                        }
+                    ]);
+                }
+                throw new Error('Failed to fetch jobs');
+            }
+            return response.json();
+        })
+        .then(data => {
+            jobData = data;
+            updateJobsTable(jobData);
+        })
+        .catch(error => {
+            console.error('Error fetching jobs:', error);
+            // Fallback to mock data on error
+            jobData = [
+                {
+                    id: 1,
+                    name: 'Hampstead Kitchen',
+                    client_name: 'John Smith',
+                    stage: 'Build',
+                    build_start_date: '2025-05-19',
+                    build_team: ['James Wilson', 'Robert Johnson'],
+                    fitting_date: '2025-05-26',
+                    fit_team: ['William Davis'],
+                    status: 'On Track'
+                },
+                {
+                    id: 2,
+                    name: 'Chelsea Wardrobe',
+                    client_name: 'Emma Johnson',
+                    stage: 'Spray',
+                    build_start_date: '2025-05-12',
+                    build_team: ['Daniel Smith'],
+                    fitting_date: '2025-05-22',
+                    fit_team: ['William Davis'],
+                    status: 'Delayed'
+                }
+            ];
+            updateJobsTable(jobData);
+        });
+}
+
+function updateJobsTable(data) {
+    // Update jobs table
+    const tableBody = document.querySelector('#jobs-table tbody');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '';
+    
+    data.forEach(job => {
+        const row = document.createElement('tr');
+        
+        // Format dates
+        const buildDate = new Date(job.build_start_date).toLocaleDateString('en-GB', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+        
+        const fittingDate = new Date(job.fitting_date).toLocaleDateString('en-GB', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+        
+        // Set status badge class
+        let statusClass = 'bg-success';
+        if (job.status === 'Delayed') statusClass = 'bg-warning';
+        if (job.status === 'Issue') statusClass = 'bg-danger';
+        if (job.status === 'Scheduled') statusClass = 'bg-info';
+        
+        row.innerHTML = `
+            <td>${job.name}</td>
+            <td>${job.client_name}</td>
+            <td>${job.stage}</td>
+            <td>${buildDate}</td>
+            <td>${fittingDate}</td>
+            <td><span class="badge ${statusClass} status-badge">${job.status}</span></td>
+            <td>${job.build_team.join(', ')}</td>
+            <td>${job.fit_team.join(', ')}</td>
+            <td>
+                <button class="btn btn-sm btn-primary edit-job-btn" data-job-id="${job.id}">Edit</button>
+            </td>
+        `;
+        
+        tableBody.appendChild(row);
+    });
+    
+    // Add event listeners to edit buttons
+    document.querySelectorAll('.edit-job-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const jobId = this.getAttribute('data-job-id');
+            openJobEditModal(jobId);
+        });
+    });
+}
+
+function fetchJobSchedule() {
+    // This would make an API call to get job schedule
+    console.log('Job schedule would be fetched here');
+}
+
+// Placeholder functions for other views
+function loadQuotes() {
+    console.log('Quotes view would be loaded here');
+}
+
+function loadClients() {
+    console.log('Clients view would be loaded here');
+}
+
+function loadStaff() {
+    console.log('Staff view would be loaded here');
+}
+
+function loadPayments() {
+    console.log('Payments view would be loaded here');
+}
+
+function loadReports() {
+    console.log('Reports view would be loaded here');
+}
+
+function openJobEditModal(jobId) {
+    console.log(`Edit modal for job ${jobId} would open here`);
+}
+
