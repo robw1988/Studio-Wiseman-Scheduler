@@ -6,7 +6,7 @@ from werkzeug.security import generate_password_hash
 
 user_bp = Blueprint('user', __name__)
 
-@user_bp.route('/api/health', methods=['GET'])
+@user_bp.route('/health', methods=['GET'])
 @login_required
 def health_check():
     """Health check endpoint to verify authentication status"""
