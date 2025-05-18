@@ -7,7 +7,7 @@ let passwordInput;
 let loginError;
 let loginContainer;
 let mainContent;
-let isAuthenticated = false;
+let logoutBtn;
 
 // Initialize authentication handling
 document.addEventListener('DOMContentLoaded', function() {
@@ -20,31 +20,18 @@ document.addEventListener('DOMContentLoaded', function() {
     loginError = document.getElementById('login-error');
     loginContainer = document.getElementById('login-container');
     mainContent = document.getElementById('main-content');
+    logoutBtn = document.getElementById('logout-btn');
     
     // Set up event listeners
     if (loginForm) {
-        loginForm.addEventListener('submit', handleLogin);
         console.log('Login form event listener attached');
-    } else {
-        console.error('Login form not found in DOM');
+        loginForm.addEventListener('submit', handleLogin);
     }
     
-    // Add logout button event listener
-    const logoutBtn = document.getElementById('logout-btn');
+    // Set up logout button if it exists
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', handleLogout);
         console.log('Logout button event listener attached');
-    } else {
-        console.error('Logout button not found in DOM');
-    }
-    
-    // Check if we're in a post-logout state
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('logout')) {
-        console.log('Detected logout parameter, showing login form');
-        sessionStorage.removeItem('authenticated');
-        showLoginForm();
-        return;
+        logoutBtn.addEventListener('click', handleLogout);
     }
     
     // Check authentication status on page load
@@ -53,7 +40,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Check if user is authenticated
 function checkAuthStatus() {
-    console.log('Checking authentication status...');
+    // Check if we're in a post-logout state
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('logout')) {
+        console.log('Detected logout parameter, showing login form');
+        showLoginForm();
+        return;
+    }
     
     // Force login form to show on initial page load if not authenticated in session
     if (!sessionStorage.getItem('authenticated')) {
@@ -62,21 +55,31 @@ function checkAuthStatus() {
         return;
     }
     
-    // If we have a session, still verify with backend
+    // Make a request to a protected endpoint
     fetch('/api/users/health')
         .then(response => {
-            console.log('Auth check response status:', response.status);
             if (response.status === 401) {
                 // User is not authenticated, show login form
+                console.log('Received 401 from health check, showing login form');
                 sessionStorage.removeItem('authenticated');
                 showLoginForm();
                 return Promise.reject('Unauthorized');
             }
-            return response.json();
+            
+            // Check if response is JSON before parsing
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                return response.json();
+            } else {
+                console.error('Health check response is not JSON:', contentType);
+                sessionStorage.removeItem('authenticated');
+                showLoginForm();
+                return Promise.reject('Invalid response format');
+            }
         })
         .then(data => {
             // User is authenticated, hide login form and show main content
-            console.log('User is authenticated:', data);
+            console.log('Health check successful, user is authenticated');
             sessionStorage.setItem('authenticated', 'true');
             hideLoginForm();
         })
@@ -84,11 +87,12 @@ function checkAuthStatus() {
             if (error === 'Unauthorized') {
                 // Already handled above
                 console.log('User needs to log in');
-                sessionStorage.removeItem('authenticated');
-                showLoginForm();
+            } else if (error === 'Invalid response format') {
+                // Already handled above
+                console.log('Invalid response format from health check');
             } else {
                 console.error('Error checking auth status:', error);
-                // If there's any error, show the login form as a fallback
+                // Show login form on any error
                 sessionStorage.removeItem('authenticated');
                 showLoginForm();
             }
@@ -98,7 +102,6 @@ function checkAuthStatus() {
 // Handle login form submission
 function handleLogin(event) {
     event.preventDefault();
-    console.log('Login form submitted');
     
     // Get form values
     const username = usernameInput.value.trim();
@@ -125,17 +128,23 @@ function handleLogin(event) {
         })
     })
     .then(response => {
-        console.log('Login response status:', response.status);
-        if (!response.ok) {
+        // Check if response is JSON before parsing
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
             return response.json().then(data => {
-                throw new Error(data.error || 'Login failed');
+                if (!response.ok) {
+                    throw new Error(data.error || 'Login failed');
+                }
+                return data;
             });
+        } else {
+            console.error('Login response is not JSON:', contentType);
+            throw new Error('Server returned an invalid response format. Please try again later.');
         }
-        return response.json();
     })
     .then(data => {
         // Login successful
-        console.log('Login successful:', data);
+        console.log('Login successful');
         sessionStorage.setItem('authenticated', 'true');
         hideLoginForm();
         // Reload the page to initialize the authenticated session
@@ -154,9 +163,8 @@ function handleLogout(event) {
     }
     
     console.log('Logging out...');
-    sessionStorage.removeItem('authenticated');
     
-    // Try both POST and GET methods for logout
+    // Try POST first, then GET if POST fails
     fetch('/api/users/logout', {
         method: 'POST',
         headers: {
@@ -164,53 +172,67 @@ function handleLogout(event) {
         }
     })
     .then(response => {
-        console.log('Logout response status:', response.status);
-        if (!response.ok) {
-            // If POST fails, try GET
-            if (response.status === 405) {
-                console.log('POST method not allowed, trying GET');
-                return fetch('/api/users/logout');
-            }
-            throw new Error('Logout failed');
+        // Check if response is JSON before parsing
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            return response.json().then(data => {
+                if (!response.ok) {
+                    throw new Error('Logout failed');
+                }
+                return data;
+            });
+        } else if (response.ok) {
+            // If response is not JSON but status is OK, still consider it successful
+            return { message: 'Logout successful' };
+        } else {
+            throw new Error('Server returned an invalid response format');
         }
-        return response.json();
     })
     .then(data => {
-        console.log('Logout successful:', data);
-        // Redirect to login page with logout parameter
-        window.location.href = '/?logout=true';
+        console.log('Logout successful');
+        completeLogout();
     })
     .catch(error => {
         console.error('Logout error:', error);
-        // Even if there's an error, try to show the login form
-        // Redirect to login page with logout parameter
-        window.location.href = '/?logout=true';
+        // Try GET method as fallback
+        fetch('/api/users/logout', { method: 'GET' })
+            .then(() => {
+                console.log('Logout successful via GET fallback');
+                completeLogout();
+            })
+            .catch(fallbackError => {
+                console.error('Fallback logout also failed:', fallbackError);
+                // Still complete logout on client side even if server request fails
+                completeLogout();
+            });
     });
+}
+
+// Complete logout process
+function completeLogout() {
+    // Clear authentication state
+    sessionStorage.removeItem('authenticated');
+    
+    // Show login form
+    showLoginForm();
+    
+    // Reload page with logout parameter to ensure fresh state
+    window.location.href = '/?logout=true';
 }
 
 // Show login form
 function showLoginForm() {
-    console.log('Showing login form');
     if (loginContainer && mainContent) {
         loginContainer.style.display = 'block';
         mainContent.style.display = 'none';
-    } else {
-        console.error('Login container or main content not found');
-        console.log('loginContainer:', loginContainer);
-        console.log('mainContent:', mainContent);
     }
 }
 
 // Hide login form
 function hideLoginForm() {
-    console.log('Hiding login form');
     if (loginContainer && mainContent) {
         loginContainer.style.display = 'none';
         mainContent.style.display = 'block';
-    } else {
-        console.error('Login container or main content not found');
-        console.log('loginContainer:', loginContainer);
-        console.log('mainContent:', mainContent);
     }
 }
 
@@ -246,7 +268,6 @@ window.fetch = function(url, options) {
     return originalFetch(url, options)
         .then(response => {
             if (response.status === 401) {
-                console.log('Unauthorized response detected:', url);
                 sessionStorage.removeItem('authenticated');
                 showLoginForm();
                 return Promise.reject('Unauthorized');
