@@ -1,7 +1,7 @@
-from flask import Blueprint, request, jsonify
-from src.models.user import db, User
-from flask_login import login_required, current_user, login_user, logout_user
-from werkzeug.security import generate_password_hash
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
+from src.models import db
 
 user_bp = Blueprint('user', __name__)
 
