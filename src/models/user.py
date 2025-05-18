@@ -1,4 +1,4 @@
-from flask_login import UserMixin
+from flask_login import login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from src.models import db
@@ -19,7 +19,35 @@ class User(db.Model, UserMixin):
     # Relationships
     job_assignments = db.relationship('JobAssignment', back_populates='user', lazy='dynamic')
     absences = db.relationship('StaffAbsence', back_populates='user', lazy='dynamic')
+
+    @user_bp.route('/api/login', methods=['POST'])
+def login():
+    """Handle user login"""
+    data = request.get_json()
     
+    # Validate required fields
+    if not data or 'username' not in data or 'password' not in data:
+        return jsonify({'error': 'Username and password are required'}), 400
+    
+    # Find user by username
+    user = User.query.filter_by(username=data['username']).first()
+    
+    # Check if user exists and password is correct
+    if user and user.verify_password(data['password']):
+        login_user(user)
+        return jsonify({
+            'message': 'Login successful',
+            'user': user.to_dict()
+        })
+    
+    return jsonify({'error': 'Invalid username or password'}), 401
+
+@user_bp.route('/api/logout', methods=['POST'])
+@login_required
+def logout():
+    """Handle user logout"""
+    logout_user()
+    return jsonify({'message': 'Logout successful'})
     @property
     def password(self):
         raise AttributeError('password is not a readable attribute')
