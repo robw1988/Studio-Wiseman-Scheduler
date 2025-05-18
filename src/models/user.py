@@ -11,9 +11,9 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128))
-    first_name = db.Column(db.String(64))
-    last_name = db.Column(db.String(64))
+    password_hash = db.Column(db.String(256))
+    first_name = db.Column(db.String(256))
+    last_name = db.Column(db.String(256))
     role = db.Column(db.String(20), default='Staff')  # Admin, Manager, CabinetMaker
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
