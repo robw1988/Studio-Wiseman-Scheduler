@@ -18,7 +18,9 @@ from src.routes.report import report_bp
 app = Flask(__name__, 
              static_folder='static',
              static_url_path='/static')
-CORS(app)
+             
+# Enable CORS with credentials support
+CORS(app, supports_credentials=True)
 
 # Enable debug mode
 app.debug = True
@@ -30,11 +32,18 @@ if app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgres://'):
     app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'].replace('postgres://', 'postgresql://')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# Session configuration
+app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production with HTTPS
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['PERMANENT_SESSION_LIFETIME'] = 86400  # 24 hours in seconds
+
 # Initialize extensions
 db.init_app(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = None  # Disable automatic redirects
+login_manager.session_protection = "strong"
 
 @login_manager.unauthorized_handler
 def unauthorized():
@@ -69,6 +78,10 @@ def index():
 @app.route('/<path:path>')
 def static_files(path):
     return send_from_directory('static', path)
+
+@app.route('/api/health')
+def health_check():
+    return jsonify({'status': 'ok'})
 
 @app.errorhandler(404)
 def not_found(e):
