@@ -42,12 +42,12 @@ def unauthorized():
 
 # Register blueprints
 app.register_blueprint(user_bp, url_prefix='/api/users')
-app.register_blueprint(client_bp)
-app.register_blueprint(quote_bp)
-app.register_blueprint(job_bp)
-app.register_blueprint(staff_bp)
-app.register_blueprint(payment_bp)
-app.register_blueprint(report_bp)
+app.register_blueprint(client_bp, url_prefix='/api/clients')
+app.register_blueprint(quote_bp, url_prefix='/api/quotes')
+app.register_blueprint(job_bp, url_prefix='/api/jobs')
+app.register_blueprint(staff_bp, url_prefix='/api/staff')
+app.register_blueprint(payment_bp, url_prefix='/api/payments')
+app.register_blueprint(report_bp, url_prefix='/api/reports')
 
 @login_manager.user_loader
 def load_user(user_id):
