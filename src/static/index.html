@@ -9,7 +9,33 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <div class="container-fluid">
+    <!-- Login Container -->
+    <div id="login-container" class="login-container" style="display: none;">
+        <div class="login-logo">
+            <h2>Studio Wiseman</h2>
+            <p class="text-muted">Cabinetry Scheduler</p>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-4">Login</h5>
+                <div id="login-error" class="alert alert-danger" style="display: none;"></div>
+                <form id="login-form">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application Content -->
+    <div id="main-content" class="container-fluid">
         <div class="row">
             <!-- Sidebar Navigation -->
             <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse">
@@ -258,142 +284,5 @@
                                     <canvas id="income-chart" height="200"></canvas>
                                     
                                     <div class="mt-4">
-                                        <h6>Total: <span id="income-history-total">£87,500</span></h6>
-                                        <div class="d-flex justify-content-between">
-                                            <span id="deposit-percentage" class="badge bg-primary p-2">Deposits: 45%</span>
-                                            <span id="build-percentage" class="badge bg-success p-2">Build: 25%</span>
-                                            <span id="fit-percentage" class="badge bg-info p-2">Fit: 20%</span>
-                                            <span id="completion-percentage" class="badge bg-warning p-2">Completion: 10%</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Current Workshop Jobs -->
-                    <div class="card mb-4">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="card-title mb-0">Current Workshop Jobs</h5>
-                            <button class="btn btn-primary btn-sm">
-                                <i class="bi bi-plus"></i> New Job
-                            </button>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table id="current-jobs-table" class="table table-striped table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Job Name</th>
-                                            <th>Client</th>
-                                            <th>Stage</th>
-                                            <th>Build Date</th>
-                                            <th>Fitting Date</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Hampstead Kitchen</td>
-                                            <td>John Smith</td>
-                                            <td>Build</td>
-                                            <td>19 May 2025</td>
-                                            <td>26 May 2025</td>
-                                            <td><span class="badge bg-success status-badge">On Track</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td>Chelsea Wardrobe</td>
-                                            <td>Emma Johnson</td>
-                                            <td>Spray</td>
-                                            <td>12 May 2025</td>
-                                            <td>22 May 2025</td>
-                                            <td><span class="badge bg-warning status-badge">Delayed</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td>Kensington Media Wall</td>
-                                            <td>Michael Brown</td>
-                                            <td>Not Started</td>
-                                            <td>2 Jun 2025</td>
-                                            <td>9 Jun 2025</td>
-                                            <td><span class="badge bg-info status-badge">Scheduled</span></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="js/main.js"></script>
-    <script>
-        // Initialize charts
-        document.addEventListener('DOMContentLoaded', function() {
-            // Cashflow Forecast Chart
-            const cashflowCtx = document.getElementById('cashflow-chart').getContext('2d');
-            window.cashflowChart = new Chart(cashflowCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['May 2025', 'Jun 2025', 'Jul 2025', 'Aug 2025', 'Sep 2025', 'Oct 2025'],
-                    datasets: [{
-                        label: 'Projected Income',
-                        data: [32500, 45000, 38000, 42000, 36000, 40000],
-                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return '£' + value;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-            
-            // Income History Chart
-            const incomeCtx = document.getElementById('income-chart').getContext('2d');
-            window.incomeChart = new Chart(incomeCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Deposits', 'Build', 'Fit', 'Completion'],
-                    datasets: [{
-                        data: [45, 25, 20, 10],
-                        backgroundColor: [
-                            'rgba(13, 110, 253, 0.7)',
-                            'rgba(25, 135, 84, 0.7)',
-                            'rgba(13, 202, 240, 0.7)',
-                            'rgba(255, 193, 7, 0.7)'
-                        ],
-                        borderColor: [
-                            'rgba(13, 110, 253, 1)',
-                            'rgba(25, 135, 84, 1)',
-                            'rgba(13, 202, 240, 1)',
-                            'rgba(255, 193, 7, 1)'
-                        ],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                        }
-                    }
-                }
-            });
-        });
-    </script>
-</body>
-</html>
+       
+(Content truncated due to size limit. Use line ranges to read in chunks)
