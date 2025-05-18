@@ -11,9 +11,9 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(256))
-    first_name = db.Column(db.String(256))
-    last_name = db.Column(db.String(256))
+    password_hash = db.Column(db.String(128))
+    first_name = db.Column(db.String(64))
+    last_name = db.Column(db.String(64))
     role = db.Column(db.String(20), default='Staff')  # Admin, Manager, CabinetMaker
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -46,8 +46,8 @@ class User(db.Model, UserMixin):
             'last_name': self.last_name,
             'full_name': self.full_name,
             'role': self.role,
-            'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat()
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
     
     def is_available(self, start_date, end_date):
