@@ -1,10 +1,48 @@
 from flask import Blueprint, request, jsonify
 from src.models import db
 from src.models.user import User
-from flask_login import login_required, current_user
+from flask_login import login_required, current_user, login_user, logout_user
 from werkzeug.security import generate_password_hash
 
 user_bp = Blueprint('user', __name__)
+
+@user_bp.route('/api/health', methods=['GET'])
+@login_required
+def health_check():
+    """Health check endpoint to verify authentication status"""
+    return jsonify({
+        'status': 'authenticated',
+        'user': current_user.to_dict() if current_user.is_authenticated else None
+    })
+
+@user_bp.route('/api/login', methods=['POST'])
+def login():
+    """Handle user login"""
+    data = request.get_json()
+    
+    # Validate required fields
+    if not data or 'username' not in data or 'password' not in data:
+        return jsonify({'error': 'Username and password are required'}), 400
+    
+    # Find user by username
+    user = User.query.filter_by(username=data['username']).first()
+    
+    # Check if user exists and password is correct
+    if user and user.verify_password(data['password']):
+        login_user(user)
+        return jsonify({
+            'message': 'Login successful',
+            'user': user.to_dict()
+        })
+    
+    return jsonify({'error': 'Invalid username or password'}), 401
+
+@user_bp.route('/api/logout', methods=['POST'])
+@login_required
+def logout():
+    """Handle user logout"""
+    logout_user()
+    return jsonify({'message': 'Logout successful'})
 
 @user_bp.route('/', methods=['GET'])
 @login_required
